@@ -1,0 +1,59 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    environment: production
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Type check
+      run: npm run check
+
+    - name: Build for production
+      run: npm run build
+
+    # Deploy to Railway (already configured in repo)
+    - name: Deploy to Railway
+      if: false  # Enable when Railway CLI is configured
+      run: |
+        npm install -g @railway/cli
+        railway up --service nexus-hr-system
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+    # Alternative: Deploy to Render
+    - name: Deploy to Render
+      if: false  # Enable when ready
+      run: |
+        curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+
+    # Deploy to VPS via SSH
+    - name: Deploy to VPS
+      if: false  # Enable when server is configured
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd /var/www/nexus-hr-system
+          git pull origin main
+          npm ci
+          npm run build
+          pm2 restart nexus-hr-system || pm2 start dist/index.cjs --name nexus-hr-system
