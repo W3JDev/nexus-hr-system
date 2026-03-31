@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Router } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
@@ -16,11 +16,11 @@ import RecruitmentPage from "./pages/recruitment";
 import SettingsPage from "./pages/settings";
 import { getCurrentUser } from "./lib/auth";
 import { User } from "../../shared/schema";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 function AppContent() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [, navigate] = useHashLocation();
 
   useEffect(() => {
     // Only try to get current user if we have a token
@@ -57,24 +57,26 @@ function AppContent() {
 
   return (
     <DashboardLayout user={user} onLogout={() => setUser(null)}>
-      <Switch hook={useHashLocation}>
-        <Route path="/" component={DashboardPage} />
-        <Route path="/employees" component={EmployeesPage} />
-        <Route path="/employees/:id">{(params) => <EmployeeDetailPage id={parseInt(params.id)} />}</Route>
-        <Route path="/leave" component={LeavePage} />
-        <Route path="/attendance" component={AttendancePage} />
-        <Route path="/payroll" component={PayrollPage} />
-        <Route path="/recruitment" component={RecruitmentPage} />
-        <Route path="/settings" component={SettingsPage} />
-        <Route>
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">404</div>
-              <div className="text-muted-foreground">Page not found</div>
+      <Router hook={useHashLocation}>
+        <Switch>
+          <Route path="/" component={DashboardPage} />
+          <Route path="/employees" component={EmployeesPage} />
+          <Route path="/employees/:id">{(params) => <EmployeeDetailPage id={parseInt(params.id)} />}</Route>
+          <Route path="/leave" component={LeavePage} />
+          <Route path="/attendance" component={AttendancePage} />
+          <Route path="/payroll" component={PayrollPage} />
+          <Route path="/recruitment" component={RecruitmentPage} />
+          <Route path="/settings" component={SettingsPage} />
+          <Route>
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-primary mb-2">404</div>
+                <div className="text-muted-foreground">Page not found</div>
+              </div>
             </div>
-          </div>
-        </Route>
-      </Switch>
+          </Route>
+        </Switch>
+      </Router>
     </DashboardLayout>
   );
 }
@@ -82,8 +84,10 @@ function AppContent() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContent />
-      <Toaster />
+      <ErrorBoundary>
+        <AppContent />
+        <Toaster />
+      </ErrorBoundary>
     </QueryClientProvider>
   );
 }

@@ -171,6 +171,8 @@ function toast({ ...props }: Toast) {
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
 
+  // FIX: Empty dependency array to prevent memory leak
+  // The setState reference is stable and doesn't need to be in deps
   React.useEffect(() => {
     listeners.push(setState)
     return () => {
@@ -179,7 +181,7 @@ function useToast() {
         listeners.splice(index, 1)
       }
     }
-  }, [state])
+  }, []) // <-- Fixed: removed state from deps to prevent listener leaks
 
   return {
     ...state,
