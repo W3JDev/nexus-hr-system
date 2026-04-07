@@ -249,7 +249,13 @@ export class MemStorage implements IStorage {
   async getUserByEmail(email: string) { return [...this.users.values()].find(u => u.email === email); }
   async getUserById(id: number) { return this.users.get(id); }
   async createUser(user: InsertUser): Promise<User> {
-    const u: User = { ...user, id: this.counters.users++, createdAt: new Date() };
+    const u: User = { 
+      ...user, 
+      id: this.counters.users++, 
+      role: user.role ?? 'employee',
+      avatarUrl: user.avatarUrl ?? null,
+      createdAt: new Date() 
+    };
     this.users.set(u.id, u);
     return u;
   }
@@ -259,7 +265,24 @@ export class MemStorage implements IStorage {
   async getEmployee(id: number) { return this.employees.get(id); }
   async getEmployeeByUserId(userId: number) { return [...this.employees.values()].find(e => e.userId === userId); }
   async createEmployee(employee: InsertEmployee): Promise<Employee> {
-    const e: Employee = { ...employee, id: this.counters.employees++, userId: employee.userId ?? null, phone: employee.phone ?? null, managerId: employee.managerId ?? null, dateOfBirth: employee.dateOfBirth ?? null, gender: employee.gender ?? null, address: employee.address ?? null, city: employee.city ?? null, country: employee.country ?? "Malaysia", salary: employee.salary ?? null, avatarUrl: employee.avatarUrl ?? null, bio: employee.bio ?? null, departmentId: employee.departmentId ?? null };
+    const e: Employee = { 
+      ...employee, 
+      id: this.counters.employees++, 
+      userId: employee.userId ?? null, 
+      phone: employee.phone ?? null, 
+      managerId: employee.managerId ?? null, 
+      dateOfBirth: employee.dateOfBirth ?? null, 
+      gender: employee.gender ?? null, 
+      address: employee.address ?? null, 
+      city: employee.city ?? null, 
+      country: employee.country ?? "Malaysia", 
+      salary: employee.salary ?? null, 
+      avatarUrl: employee.avatarUrl ?? null, 
+      bio: employee.bio ?? null, 
+      departmentId: employee.departmentId ?? null,
+      status: employee.status ?? 'active',
+      employmentType: employee.employmentType ?? 'full_time'
+    };
     this.employees.set(e.id, e);
     return e;
   }
@@ -283,7 +306,12 @@ export class MemStorage implements IStorage {
   // ── Leave Types ──
   async getLeaveTypes() { return [...this.leaveTypes.values()]; }
   async createLeaveType(lt: InsertLeaveType): Promise<LeaveType> {
-    const l: LeaveType = { ...lt, id: this.counters.leaveTypes++ };
+    const l: LeaveType = { 
+      ...lt, 
+      id: this.counters.leaveTypes++,
+      color: lt.color ?? '#01696F',
+      isPaid: lt.isPaid ?? true
+    };
     this.leaveTypes.set(l.id, l);
     return l;
   }
@@ -292,7 +320,15 @@ export class MemStorage implements IStorage {
   async getLeaveApplications() { return [...this.leaveApplications.values()]; }
   async getLeaveApplicationsByEmployee(employeeId: number) { return [...this.leaveApplications.values()].filter(la => la.employeeId === employeeId); }
   async createLeaveApplication(la: InsertLeaveApplication): Promise<LeaveApplication> {
-    const l: LeaveApplication = { ...la, id: this.counters.leaveApplications++, reason: la.reason ?? null, approverId: la.approverId ?? null, approvedAt: null, createdAt: new Date() };
+    const l: LeaveApplication = { 
+      ...la, 
+      id: this.counters.leaveApplications++, 
+      reason: la.reason ?? null, 
+      approverId: la.approverId ?? null, 
+      approvedAt: null, 
+      status: la.status ?? 'pending',
+      createdAt: new Date() 
+    };
     this.leaveApplications.set(l.id, l);
     return l;
   }
@@ -311,7 +347,14 @@ export class MemStorage implements IStorage {
     return [...this.attendanceRecords.values()].filter(a => a.date === today);
   }
   async createAttendance(a: InsertAttendance): Promise<Attendance> {
-    const att: Attendance = { ...a, id: this.counters.attendance++, checkIn: a.checkIn ?? null, checkOut: a.checkOut ?? null, hoursWorked: a.hoursWorked ?? null };
+    const att: Attendance = { 
+      ...a, 
+      id: this.counters.attendance++, 
+      checkIn: a.checkIn ?? null, 
+      checkOut: a.checkOut ?? null, 
+      hoursWorked: a.hoursWorked ?? null,
+      status: a.status ?? 'present'
+    };
     this.attendanceRecords.set(att.id, att);
     return att;
   }
@@ -326,7 +369,15 @@ export class MemStorage implements IStorage {
   async getPayrollRuns() { return [...this.payrollRuns.values()].sort((a,b) => b.year - a.year || b.month - a.month); }
   async getPayrollRun(id: number) { return this.payrollRuns.get(id); }
   async createPayrollRun(pr: InsertPayrollRun): Promise<PayrollRun> {
-    const p: PayrollRun = { ...pr, id: this.counters.payrollRuns++, totalGross: pr.totalGross ?? null, totalNet: pr.totalNet ?? null, employeeCount: pr.employeeCount ?? null, createdAt: new Date() };
+    const p: PayrollRun = { 
+      ...pr, 
+      id: this.counters.payrollRuns++, 
+      totalGross: pr.totalGross ?? null, 
+      totalNet: pr.totalNet ?? null, 
+      employeeCount: pr.employeeCount ?? null, 
+      status: pr.status ?? 'draft',
+      createdAt: new Date() 
+    };
     this.payrollRuns.set(p.id, p);
     return p;
   }
@@ -344,7 +395,14 @@ export class MemStorage implements IStorage {
     return [...this.salarySlips.values()].filter(s => s.employeeId === employeeId);
   }
   async createSalarySlip(ss: InsertSalarySlip): Promise<SalarySlip> {
-    const s: SalarySlip = { ...ss, id: this.counters.salarySlips++, allowances: ss.allowances ?? "0", deductions: ss.deductions ?? "0", createdAt: new Date() };
+    const s: SalarySlip = { 
+      ...ss, 
+      id: this.counters.salarySlips++, 
+      allowances: ss.allowances ?? "0", 
+      deductions: ss.deductions ?? "0", 
+      status: ss.status ?? 'generated',
+      createdAt: new Date() 
+    };
     this.salarySlips.set(s.id, s);
     return s;
   }
@@ -353,7 +411,20 @@ export class MemStorage implements IStorage {
   async getJobPostings() { return [...this.jobPostings.values()].sort((a,b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()); }
   async getJobPosting(id: number) { return this.jobPostings.get(id); }
   async createJobPosting(jp: InsertJobPosting): Promise<JobPosting> {
-    const j: JobPosting = { ...jp, id: this.counters.jobPostings++, description: jp.description ?? null, requirements: jp.requirements ?? null, location: jp.location ?? null, salaryMin: jp.salaryMin ?? null, salaryMax: jp.salaryMax ?? null, applicantCount: jp.applicantCount ?? 0, createdAt: new Date() };
+    const j: JobPosting = { 
+      ...jp, 
+      id: this.counters.jobPostings++, 
+      description: jp.description ?? null, 
+      requirements: jp.requirements ?? null, 
+      location: jp.location ?? null, 
+      salaryMin: jp.salaryMin ?? null, 
+      salaryMax: jp.salaryMax ?? null, 
+      applicantCount: jp.applicantCount ?? 0, 
+      status: jp.status ?? 'open',
+      employmentType: jp.employmentType ?? 'full_time',
+      departmentId: jp.departmentId ?? null,
+      createdAt: new Date() 
+    };
     this.jobPostings.set(j.id, j);
     return j;
   }
@@ -368,7 +439,16 @@ export class MemStorage implements IStorage {
     return jobPostingId ? apps.filter(a => a.jobPostingId === jobPostingId) : apps;
   }
   async createJobApplication(ja: InsertJobApplication): Promise<JobApplication> {
-    const j: JobApplication = { ...ja, id: this.counters.jobApplications++, phone: ja.phone ?? null, coverLetter: ja.coverLetter ?? null, rating: ja.rating ?? null, notes: ja.notes ?? null, createdAt: new Date() };
+    const j: JobApplication = { 
+      ...ja, 
+      id: this.counters.jobApplications++, 
+      phone: ja.phone ?? null, 
+      coverLetter: ja.coverLetter ?? null, 
+      rating: ja.rating ?? null, 
+      notes: ja.notes ?? null, 
+      stage: ja.stage ?? 'applied',
+      createdAt: new Date() 
+    };
     this.jobApplications.set(j.id, j);
     return j;
   }
@@ -382,7 +462,13 @@ export class MemStorage implements IStorage {
   // ── Announcements ──
   async getAnnouncements() { return [...this.announcements.values()].sort((a,b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()); }
   async createAnnouncement(a: InsertAnnouncement): Promise<Announcement> {
-    const ann: Announcement = { ...a, id: this.counters.announcements++, authorId: a.authorId ?? null, createdAt: new Date() };
+    const ann: Announcement = { 
+      ...a, 
+      id: this.counters.announcements++, 
+      authorId: a.authorId ?? null, 
+      priority: a.priority ?? 'normal',
+      createdAt: new Date() 
+    };
     this.announcements.set(ann.id, ann);
     return ann;
   }
