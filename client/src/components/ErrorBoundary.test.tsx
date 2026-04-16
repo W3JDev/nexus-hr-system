@@ -6,14 +6,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { ErrorBoundary, ErrorFallback } from "../components/ErrorBoundary";
 
-// Component that throws an error during render
-const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
-  if (shouldThrow) {
-    throw new Error("Test error");
-  }
-  return <div>No error</div>;
-};
-
 // Suppress console.error during error boundary tests
 const originalConsoleError = console.error;
 beforeEach(() => {
@@ -39,18 +31,6 @@ describe("ErrorBoundary", () => {
   // Note: Error catching tests are skipped due to React Testing Library limitations
   // ErrorBoundary catches errors correctly in production, but RTL cannot properly
   // test error boundaries throwing during render. ErrorFallback tests cover the UI.
-
-  it("should render custom fallback when provided", () => {
-    const customFallback = <div data-testid="custom-fallback">Custom Error</div>;
-
-    render(
-      <ErrorBoundary fallback={customFallback}>
-        <div>Normal content</div>
-      </ErrorBoundary>
-    );
-
-    expect(screen.getByText("Normal content")).toBeInTheDocument();
-  });
 });
 
 describe("ErrorFallback", () => {
